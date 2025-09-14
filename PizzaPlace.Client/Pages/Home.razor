@@ -1,0 +1,91 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Order a pizza</MudText>
+<MudText Class="mb-8">Why don't ya;)</MudText>
+
+<MudDivider DividerType="DividerType.Middle"/>
+
+<br />
+<MudForm>
+    <MudGrid>
+        <MudItem xs="3">
+            <MudText >Name: </MudText>
+        </MudItem>
+        <MudItem xs="4">
+            <MudTextField T="string"/>
+        </MudItem>
+
+        <MudFlexBreak />
+        <MudItem xs="3">
+            <MudText >Email: </MudText>
+        </MudItem>
+        <MudItem xs="4">
+            <MudTextField T="string"/>
+        </MudItem>
+
+        <MudFlexBreak />
+        <MudItem xs="2">
+            <MudText >Select Size: </MudText>
+        </MudItem>
+        <MudItem xs="3">
+            <MudSelect @bind-Value="_sizes">
+                @foreach (Sizes s in Enum.GetValues(typeof(Sizes)))
+                {
+                    <MudSelectItem Value="@s">@s</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudFlexBreak />
+        <MudItem xs="2">
+            <MudText >Select Toppings: </MudText>
+        </MudItem>
+        <MudItem xs="3">
+            <MudSelect @bind-Value="_toppings" MultiSelection="true">
+                @foreach (Toppings t in Enum.GetValues(typeof(Toppings)))
+                {
+                    <MudSelectItem Value="@t">@t</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudFlexBreak />
+        <MudItem xs="3">
+            <MudText >Crust Type: </MudText>
+        </MudItem>
+        <MudItem xs="3">
+            <MudRadioGroup @bind-Value="crustType">
+                <MudRadio Value="@("Thin")" Color="Color.Primary">Thin</MudRadio>
+                <MudRadio Value="@("Thick")" Color="Color.Primary">Thick</MudRadio>
+            </MudRadioGroup>
+        </MudItem>
+
+        <MudFlexBreak />
+        <MudItem xs="3">
+           <MudCheckBox @bind-Value="isTipping" Label="Add a tip"></MudCheckBox>
+        </MudItem>
+        <MudItem xs="3">
+           <MudTextField T="float" @bind-Value="tip" Disabled="(!isTipping)" />
+        </MudItem>
+
+        <MudFlexBreak />
+        <MudItem xs="2">
+            <MudButton Color="Color.Primary">Place Order</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudForm>
+
+@code{
+    private string name { get; set; }
+    private string email { get; set; }
+    private Sizes _sizes { get; set; } = Sizes.Small;
+    private Toppings _toppings { get; set; }
+    private string crustType { get; set; }
+    private bool isTipping { get; set; }
+    private float tip { get; set; } = 0;
+
+    private enum Sizes { Small, Medium, Large }
+    private enum Toppings { Cheese, Pepperoni, Mushroom, Olives, Peppers }
+}
