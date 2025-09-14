@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject AppStateService appState
 
 <PageTitle>Home</PageTitle>
 
@@ -8,21 +9,21 @@
 <MudDivider DividerType="DividerType.Middle"/>
 
 <br />
-<MudForm>
+<MudForm @ref="form" @bind-IsValid="success">
     <MudGrid>
-        <MudItem xs="3">
+        <MudItem xs="2">
             <MudText >Name: </MudText>
         </MudItem>
         <MudItem xs="4">
-            <MudTextField T="string"/>
+            <MudTextField T="string" @bind-Value="name" Required="true" RequiredError="Name is required"/>
         </MudItem>
 
         <MudFlexBreak />
-        <MudItem xs="3">
+        <MudItem xs="2">
             <MudText >Email: </MudText>
         </MudItem>
         <MudItem xs="4">
-            <MudTextField T="string"/>
+            <MudTextField T="string" @bind-Value="email" Required="true" RequiredError="Email is required" />
         </MudItem>
 
         <MudFlexBreak />
@@ -43,7 +44,7 @@
             <MudText >Select Toppings: </MudText>
         </MudItem>
         <MudItem xs="3">
-            <MudSelect @bind-Value="_toppings" MultiSelection="true">
+            <MudSelect @bind-SelectedValues="selectedToppings" MultiSelection="true">
                 @foreach (Toppings t in Enum.GetValues(typeof(Toppings)))
                 {
                     <MudSelectItem Value="@t">@t</MudSelectItem>
@@ -52,18 +53,18 @@
         </MudItem>
 
         <MudFlexBreak />
-        <MudItem xs="3">
+        <MudItem xs="2">
             <MudText >Crust Type: </MudText>
         </MudItem>
         <MudItem xs="3">
-            <MudRadioGroup @bind-Value="crustType">
+            <MudRadioGroup @bind-Value="crustType" Required="true" RequiredError="Crust type is required">
                 <MudRadio Value="@("Thin")" Color="Color.Primary">Thin</MudRadio>
                 <MudRadio Value="@("Thick")" Color="Color.Primary">Thick</MudRadio>
             </MudRadioGroup>
         </MudItem>
 
         <MudFlexBreak />
-        <MudItem xs="3">
+        <MudItem xs="2">
            <MudCheckBox @bind-Value="isTipping" Label="Add a tip"></MudCheckBox>
         </MudItem>
         <MudItem xs="3">
@@ -72,20 +73,90 @@
 
         <MudFlexBreak />
         <MudItem xs="2">
-            <MudButton Color="Color.Primary">Place Order</MudButton>
+            <MudButton Disabled="@(!success)" OnClick="saveValues" Href="confirmation" Variant="Variant.Filled" Color="Color.Primary">Place Order</MudButton>
         </MudItem>
     </MudGrid>
 </MudForm>
 
 @code{
+    bool success;
+    MudForm form;
+
     private string name { get; set; }
     private string email { get; set; }
     private Sizes _sizes { get; set; } = Sizes.Small;
-    private Toppings _toppings { get; set; }
+    private IEnumerable<Toppings> selectedToppings = new List<Toppings> { };
     private string crustType { get; set; }
     private bool isTipping { get; set; }
     private float tip { get; set; } = 0;
 
+    // const variables
+    private const float p_small = 30;
+    private const float p_medium = 50;
+    private const float p_large = 90;
+    private const float p_thin = 5;
+    private const float p_thick = 10;
+    private const float p_topping = 2;
+
     private enum Sizes { Small, Medium, Large }
     private enum Toppings { Cheese, Pepperoni, Mushroom, Olives, Peppers }
+
+    private float CalcPizzaPrice()
+    {
+        float result = 0;
+        switch (_sizes) // get what the size of the pizza is
+        {
+            case Sizes.Small:
+                result += p_small;
+                break;
+            case Sizes.Medium:
+                result += p_medium;
+                break;
+            case Sizes.Large:
+                result += p_large;
+                break;
+        }
+
+        switch (crustType) // get the type of crust
+        {
+            case "Thin": result += p_thin;
+                break;
+            case "Thick": result += p_thick;
+                break;
+        }
+
+        int t_count = selectedToppings.Count();
+        result += (t_count * p_topping);
+
+        result += tip;
+
+        return result;
+    }
+
+    private IEnumerable<string> getToppingsList()
+    {
+        IEnumerable<string> l_toppings = new List<string> { };
+
+        if (selectedToppings == null) return l_toppings;
+
+        foreach (Toppings toppings in selectedToppings)
+        {
+            l_toppings = l_toppings.Append(toppings.ToString());
+        }
+
+        return l_toppings;
+    }
+
+    private async Task saveValues()
+    {
+        var state = await appState.GetStateAsync();
+        state.Name = name;
+        state.Email = email;
+        state.Size = _sizes.ToString();
+        state.SelectedToppings = getToppingsList();
+        state.CrustType = crustType;
+        state.tip = tip;
+        state.Total = CalcPizzaPrice();
+        await appState.SaveStateAsync(state);
+    }
 }

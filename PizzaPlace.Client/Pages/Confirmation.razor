@@ -1,0 +1,48 @@
+﻿@page "/confirmation"
+@inject AppStateService appState
+
+<PageTitle>Order Comfirmation</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Please Confirm Your Order:</MudText>
+<MudText Class="mb-8">Thanks a million</MudText>
+
+<MudDivider DividerType="DividerType.Middle" />
+<MudText>Name: @name</MudText>
+<MudText>Email: @email</MudText>
+<MudText>========================</MudText>
+<MudDivider DividerType="DividerType.Middle" />
+<MudText>Size: @size</MudText>
+<MudText>Toppings: @toppings</MudText>
+<MudText>Crust Type: @crustType</MudText>
+<MudText>========================</MudText>
+<MudDivider DividerType="DividerType.Middle" />
+<MudText>Total: R @total</MudText>
+
+@code{
+    private string name { get; set; }
+    private string email { get; set; }
+    private string size { get; set; }
+    private IEnumerable<string> selectedToppings = new List<string> { };
+    private string toppings { get; set; }
+    private string crustType { get; set; }
+    private float tip { get; set; }
+    private float total { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1);
+        var state = await appState.GetStateAsync();
+        name = state.Name;
+        email = state.Email;
+        size = state.Size;
+        selectedToppings = state.SelectedToppings;
+        crustType = state.CrustType;
+        tip = state.tip;
+        total = state.Total;
+
+        foreach(string t in selectedToppings)
+        {
+            toppings += t + ", ";
+        }
+    }
+}

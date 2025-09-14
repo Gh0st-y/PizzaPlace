@@ -1,11 +1,16 @@
+using Blazored.SessionStorage;
 using MudBlazor.Services;
 using PizzaPlace.Client.Pages;
+using PizzaPlace.Client.Scripts;
 using PizzaPlace.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
+
+builder.Services.AddBlazoredSessionStorage();
+builder.Services.AddScoped<AppStateService>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
